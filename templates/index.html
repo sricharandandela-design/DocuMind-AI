@@ -1,0 +1,571 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuMind AI | Document Intelligence</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7fc;
+            color: #1e293b;
+        }
+
+        .sidebar {
+            position: fixed;
+            width: 240px;
+            height: 100vh;
+            background: #101b3d;
+            color: white;
+            padding: 30px 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 45px;
+        }
+
+        .menu a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background: #263b70;
+            color: white;
+        }
+
+        .main {
+            margin-left: 240px;
+            padding: 35px;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .action-link {
+            display: inline-block;
+            background: #15803d;
+            color: white;
+            text-decoration: none;
+            padding: 13px 22px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .action-link:hover {
+            background: #166534;
+        }
+
+        .history-link {
+            background: #475569;
+        }
+
+        .history-link:hover {
+            background: #334155;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
+        .card h3 {
+            color: #64748b;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card h2 {
+            font-size: 30px;
+            color: #1d4ed8;
+        }
+
+        .upload-box,
+        .result,
+        .analytics-card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
+        .upload-box h2,
+        .result h2,
+        .analytics-card h2 {
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .message {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .filename {
+            color: #2563eb;
+            margin-bottom: 20px;
+        }
+
+        .classification-box {
+            background: #eff6ff;
+            border-left: 5px solid #2563eb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .classification-box p {
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .classification-box h3 {
+            color: #1d4ed8;
+            font-size: 23px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .analytics-card {
+            min-width: 0;
+            margin-bottom: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        .no-data {
+            color: #64748b;
+            text-align: center;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        pre {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        @media (max-width: 1000px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <div class="logo">
+            DocuMind AI
+        </div>
+
+        <div class="menu">
+            <a href="/" class="active">Dashboard</a>
+            <a href="#upload">Upload Documents</a>
+            <a href="#analytics">Analytics</a>
+            <a href="#results">Extracted Results</a>
+            <a href="/history">Document History</a>
+        </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+
+        <div class="header">
+            <h1>Document Intelligence Dashboard</h1>
+            <p>
+                Upload, analyze and extract information from your documents.
+            </p>
+        </div>
+
+        <!-- Dashboard Action Buttons -->
+        <div class="dashboard-actions">
+
+            <a href="{{ url_for('export_excel') }}"
+               class="action-link">
+                📊 Export to Excel
+            </a>
+
+            <a href="{{ url_for('history') }}"
+               class="action-link history-link">
+                📁 Document History
+            </a>
+
+        </div>
+
+        <!-- Dashboard Statistics -->
+        <div class="cards">
+
+            <div class="card">
+                <h3>Total Documents</h3>
+                <h2>{{ stats.total_documents }}</h2>
+            </div>
+
+            <div class="card">
+                <h3>Processed Documents</h3>
+                <h2>{{ stats.processed_documents }}</h2>
+            </div>
+
+            <div class="card">
+                <h3>Extracted Fields</h3>
+                <h2>{{ stats.extracted_fields }}</h2>
+            </div>
+
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="analytics">
+
+            <div class="header">
+                <h1>Document Analytics</h1>
+                <p>Visual overview of your document classification results.</p>
+            </div>
+
+            <div class="analytics-grid">
+
+                <div class="analytics-card">
+                    <h2>Category Distribution</h2>
+
+                    <div class="chart-container">
+                        <canvas id="categoryPieChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <h2>Category Comparison</h2>
+
+                    <div class="chart-container">
+                        <canvas id="categoryBarChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-box" id="upload">
+
+            <h2>Upload Your Document</h2>
+
+            <p>Supported formats: PDF, JPG and PNG</p>
+
+            <form action="{{ url_for('upload_file') }}"
+                  method="POST"
+                  enctype="multipart/form-data">
+
+                <input
+                    type="file"
+                    name="document"
+                    accept=".pdf,.png,.jpg,.jpeg"
+                    required
+                >
+
+                <button type="submit">
+                    Upload & Extract Information
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Extracted Results -->
+        {% if extracted_information is defined %}
+
+            <div class="result" id="results">
+
+                <h2>Document Analysis Results</h2>
+
+                <p class="filename">
+                    Document: {{ uploaded_filename }}
+                </p>
+
+                <!-- Document Classification -->
+                <div class="classification-box">
+
+                    <p>Automatically Detected Document Category</p>
+
+                    <h3>
+                        {{ document_type | default("Not classified") }}
+                    </h3>
+
+                </div>
+
+                <!-- Extracted Information -->
+                <h2>Extracted Information</h2>
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Field Name</th>
+                            <th>Extracted Value</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for field, value in extracted_information.items() %}
+
+                            <tr>
+                                <td>{{ field }}</td>
+                                <td>{{ value }}</td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+                <!-- Original OCR Text -->
+                <h2>Original Extracted Text</h2>
+
+                <pre>{{ extracted_text }}</pre>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- Analytics Charts -->
+    <script>
+
+        const categoryData = {{ category_stats | tojson }};
+
+        const categoryLabels = Object.keys(categoryData);
+        const categoryValues = Object.values(categoryData);
+
+        const totalCategoryDocuments = categoryValues.reduce(
+            (total, value) => total + value,
+            0
+        );
+
+        if (totalCategoryDocuments > 0) {
+
+            new Chart(
+                document.getElementById("categoryPieChart"),
+                {
+                    type: "doughnut",
+
+                    data: {
+                        labels: categoryLabels,
+
+                        datasets: [{
+                            data: categoryValues,
+
+                            backgroundColor: [
+                                "#2563eb",
+                                "#0ea5e9",
+                                "#8b5cf6",
+                                "#f59e0b",
+                                "#10b981",
+                                "#94a3b8"
+                            ],
+
+                            borderWidth: 2,
+                            borderColor: "#ffffff"
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                position: "bottom"
+                            }
+                        }
+                    }
+                }
+            );
+
+            new Chart(
+                document.getElementById("categoryBarChart"),
+                {
+                    type: "bar",
+
+                    data: {
+                        labels: categoryLabels,
+
+                        datasets: [{
+                            label: "Number of Documents",
+                            data: categoryValues,
+                            backgroundColor: "#2563eb",
+                            borderRadius: 7
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        },
+
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            );
+
+        } else {
+
+            document.querySelector(".analytics-grid").innerHTML =
+                '<div class="analytics-card no-data">' +
+                '<h2>No Analytics Available</h2>' +
+                '<p>Upload your first document to generate analytics.</p>' +
+                '</div>';
+
+        }
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Python environments
+venv/
+venv313/
+venv_new/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Private documents
+uploads/
+document_history.json
+
+# Environment secrets
+.env
+.env.*
+
+# VS Code settings
+.vscode/

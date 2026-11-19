@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document Details | DocuMind AI</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: auto;
+            background: white;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .details-card {
+            background: #f8fafc;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .details-card p {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .details-card strong {
+            color: #334155;
+        }
+
+        .document-type {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 8px 14px;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .status {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: #1e3a8a;
+            margin-bottom: 18px;
+        }
+
+        .preview-section,
+        .ocr-section {
+            margin-bottom: 30px;
+        }
+
+        .preview-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .preview-box iframe {
+            width: 100%;
+            height: 550px;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .preview-box img {
+            max-width: 100%;
+            max-height: 550px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .preview-message {
+            color: #64748b;
+            padding: 25px;
+        }
+
+        .ocr-text-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+            min-height: 120px;
+            max-height: 450px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.7;
+            color: #334155;
+            font-size: 15px;
+        }
+
+        .no-text {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 22px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .action-button:hover {
+            background: #1d4ed8;
+        }
+
+        .history-button {
+            background: #475569;
+        }
+
+        .history-button:hover {
+            background: #334155;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 20px;
+                overflow-x: auto;
+            }
+
+            .preview-box iframe {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Document Details</h1>
+
+    <p class="subtitle">
+        Complete information about your processed document.
+    </p>
+
+    <!-- Document Information -->
+    <div class="details-card">
+
+        <p>
+            <strong>Document Name:</strong>
+            {{ document.filename }}
+        </p>
+
+        <p>
+            <strong>Document Type:</strong>
+
+            <span class="document-type">
+                {{ document.get('document_type', 'Not classified') }}
+            </span>
+        </p>
+
+        <p>
+            <strong>Processing Status:</strong>
+
+            <span class="status">
+                {{ document.status }}
+            </span>
+        </p>
+
+    </div>
+
+    <!-- Document Preview -->
+    <div class="preview-section">
+
+        <h2>Document Preview</h2>
+
+        <div class="preview-box">
+
+            {% set extension = document.filename.rsplit('.', 1)[-1].lower() %}
+
+            {% if extension == 'pdf' %}
+
+                <iframe
+                    src="{{ url_for('preview_document', filename=document.filename) }}"
+                    title="PDF Document Preview">
+                </iframe>
+
+            {% elif extension in ['png', 'jpg', 'jpeg'] %}
+
+                <img
+                    src="{{ url_for('preview_document', filename=document.filename) }}"
+                    alt="Uploaded Document Preview">
+
+            {% else %}
+
+                <p class="preview-message">
+                    Preview is not available for this file type.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- Full Extracted OCR Text -->
+    <div class="ocr-section">
+
+        <h2>Full Extracted OCR Text</h2>
+
+        <div class="ocr-text-box">
+
+            {% if document.get('extracted_text') %}
+
+                {{ document.extracted_text }}
+
+            {% else %}
+
+                <p class="no-text">
+                    No OCR text is available for this document.
+                    Upload a new document to view its complete extracted text.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- Extracted Information -->
+    <h2>Extracted Information</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Field Name</th>
+                <th>Extracted Value</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for field, value in document.extracted_information.items() %}
+
+            <tr>
+                <td>{{ field }}</td>
+                <td>{{ value }}</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    <!-- Action Buttons -->
+    <div class="button-group">
+
+        <a href="{{ url_for('download_extracted_text', document_index=document_index) }}"
+           class="action-button">
+            Download OCR Text
+        </a>
+
+        <a href="{{ url_for('history') }}"
+           class="action-button history-button">
+            Back to Document History
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

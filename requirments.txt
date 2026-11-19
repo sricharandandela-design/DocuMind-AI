@@ -1,0 +1,10 @@
+
+Flask
+pytesseract
+PyMuPDF
+Pillow
+opencv-python
+spacy
+scikit-learn
+pandas
+openpyxl

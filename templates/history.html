@@ -1,0 +1,469 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document History | DocuMind AI</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7fb;
+            padding: 40px;
+            color: #263247;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #718096;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            padding: 11px 18px;
+            border-radius: 7px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back-button {
+            background: #475569;
+        }
+
+        .export-button {
+            background: #15803d;
+        }
+
+        .filter-box {
+            background: #f8fafc;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .filter-box h2 {
+            color: #1e3a8a;
+            font-size: 20px;
+            margin-bottom: 18px;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #475569;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .search-button {
+            background: #2563eb;
+        }
+
+        .reset-button {
+            background: #64748b;
+        }
+
+        .button:hover {
+            opacity: 0.88;
+        }
+
+        .results-count {
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .status {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .document-type {
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .view-button {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .delete-button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .message {
+            padding: 12px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 7px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 18px;
+                overflow-x: auto;
+            }
+
+            .filter-form {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .filter-group:first-child {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .filter-form {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-group:first-child {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+
+    <div class="header">
+
+        <div>
+            <h1>Document History</h1>
+
+            <p class="subtitle">
+                Search, filter and manage your processed documents.
+            </p>
+        </div>
+
+        <div class="actions">
+
+            <a href="/" class="button back-button">
+                Back to Dashboard
+            </a>
+
+            <a href="{{ url_for('export_excel') }}"
+               class="button export-button">
+                Export to Excel
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- Flash Messages -->
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Search and Filter Section -->
+
+    <div class="filter-box">
+
+        <h2>Search &amp; Filter Documents</h2>
+
+        <form action="{{ url_for('history') }}"
+              method="GET"
+              class="filter-form">
+
+            <div class="filter-group">
+
+                <label>Search by Document Name or Content</label>
+
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Enter filename, OCR text, customer name..."
+                    value="{{ search_query }}"
+                >
+
+            </div>
+
+            <div class="filter-group">
+
+                <label>Document Type</label>
+
+                <select name="document_type">
+
+                    <option value="">All Types</option>
+
+                    <option value="Invoice"
+                        {% if selected_type == "Invoice" %}selected{% endif %}>
+                        Invoice
+                    </option>
+
+                    <option value="Identity Document"
+                        {% if selected_type == "Identity Document" %}selected{% endif %}>
+                        Identity Document
+                    </option>
+
+                    <option value="Certificate"
+                        {% if selected_type == "Certificate" %}selected{% endif %}>
+                        Certificate
+                    </option>
+
+                    <option value="Application Form"
+                        {% if selected_type == "Application Form" %}selected{% endif %}>
+                        Application Form
+                    </option>
+
+                    <option value="Other Document"
+                        {% if selected_type == "Other Document" %}selected{% endif %}>
+                        Other Document
+                    </option>
+
+                    <option value="Not classified"
+                        {% if selected_type == "Not classified" %}selected{% endif %}>
+                        Not classified
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="filter-group">
+
+                <label>Processing Status</label>
+
+                <select name="status">
+
+                    <option value="">All Status</option>
+
+                    <option value="Processed"
+                        {% if selected_status == "Processed" %}selected{% endif %}>
+                        Processed
+                    </option>
+
+                </select>
+
+            </div>
+
+            <button type="submit" class="button search-button">
+                Search
+            </button>
+
+            <a href="{{ url_for('history') }}"
+               class="button reset-button">
+                Reset
+            </a>
+
+        </form>
+
+    </div>
+
+    <!-- Document Table -->
+
+    <p class="results-count">
+        Showing {{ documents|length }} matching document(s).
+    </p>
+
+    {% if documents %}
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Document Name</th>
+                <th>Document Type</th>
+                <th>Status</th>
+                <th>Extracted Fields</th>
+                <th>Action</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for item in documents %}
+
+            {% set document = item.document %}
+            {% set original_index = item.original_index %}
+
+            <tr>
+
+                <td>{{ loop.index }}</td>
+
+                <td>{{ document.filename }}</td>
+
+                <td>
+                    <span class="document-type">
+                        {{ document.get('document_type', 'Not classified') }}
+                    </span>
+                </td>
+
+                <td class="status">
+                    {{ document.status }}
+                </td>
+
+                <td>
+                    {% set count = namespace(value=0) %}
+
+                    {% for value in document.extracted_information.values() %}
+                        {% if value != "Not found" and value %}
+                            {% set count.value = count.value + 1 %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {{ count.value }}
+                </td>
+
+                <td>
+                    <a class="view-button"
+                       href="{{ url_for('document_details', document_index=original_index) }}">
+                        View Details
+                    </a>
+                </td>
+
+                <td>
+
+                    <form
+                        action="{{ url_for('remove_document', document_index=original_index) }}"
+                        method="POST"
+                        onsubmit="return confirm('Are you sure you want to delete this document?');"
+                    >
+
+                        <button type="submit" class="delete-button">
+                            Delete
+                        </button>
+
+                    </form>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="empty">
+
+        <h3>No Documents Found</h3>
+
+        <p>
+            No documents match your search or filter.
+            Try changing your filters.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>
